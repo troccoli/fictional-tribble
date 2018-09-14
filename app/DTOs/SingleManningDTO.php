@@ -65,4 +65,16 @@ class SingleManningDTO
 
         return $this;
     }
+
+    /**
+     * @param Carbon $day
+     * @param Carbon $from
+     * @param Carbon $to
+     *
+     * @return SingleManningDTO
+     */
+    public function addSingleManningPeriod(Carbon $day, Carbon $from, Carbon $to): self
+    {
+        return $this->addMinutes($day, $from->diffInMinutes($to));
+    }
 }
