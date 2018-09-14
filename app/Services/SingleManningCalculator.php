@@ -10,13 +10,12 @@ use Illuminate\Support\Carbon;
 
 class SingleManningCalculator
 {
-
     /**
      * @param Rota $rota
      *
      * @return SingleManningDTO
      */
-    public static function calculate(Rota $rota): SingleManningDTO
+    public function calculate(Rota $rota): SingleManningDTO
     {
         $singleManningDTO = new SingleManningDTO();
 

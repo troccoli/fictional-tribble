@@ -13,6 +13,17 @@ use Tests\TestCase;
 
 class SinlgeManningTest extends TestCase
 {
+    /** @var SingleManningCalculator */
+    protected $singleManningCalculator;
+
+    /**
+     * @before
+     */
+    public function setSingleManningCalculator()
+    {
+        $this->singleManningCalculator = resolve(SingleManningCalculator::class);
+    }
+
     public function testScenarioOne()
     {
         /*
@@ -55,7 +66,7 @@ class SinlgeManningTest extends TestCase
         ]);
 
         // Calculate the single mannings
-        $singleManningDTO = SingleManningCalculator::calculate($rota);
+        $singleManningDTO = $this->singleManningCalculator->calculate($rota);
 
         // Check the single manning is what we are expecting
         $this->assertEquals(480, $singleManningDTO->monday); // 8 hours shift
@@ -123,7 +134,7 @@ class SinlgeManningTest extends TestCase
         ]);
 
         // Calculate the single mannings
-        $singleManningDTO = SingleManningCalculator::calculate($rota);
+        $singleManningDTO = $this->singleManningCalculator->calculate($rota);
 
         // Check the single manning is what we are expecting
         $this->assertEquals(0, $singleManningDTO->monday);
@@ -192,7 +203,7 @@ class SinlgeManningTest extends TestCase
         ]);
 
         // Calculate the single mannings
-        $singleManningDTO = SingleManningCalculator::calculate($rota);
+        $singleManningDTO = $this->singleManningCalculator->calculate($rota);
 
         // Check the single manning is what we are expecting
         $this->assertEquals(0, $singleManningDTO->monday);
@@ -272,7 +283,7 @@ class SinlgeManningTest extends TestCase
         ]);
 
         // Calculate the single mannings
-        $singleManningDTO = SingleManningCalculator::calculate($rota);
+        $singleManningDTO = $this->singleManningCalculator->calculate($rota);
 
         // Check the single manning is what we are expecting
         $this->assertEquals(0, $singleManningDTO->monday);
