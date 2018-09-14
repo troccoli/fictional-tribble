@@ -2,6 +2,8 @@
 
 namespace App\DTOs;
 
+use Illuminate\Support\Carbon;
+
 class SingleManningDTO
 {
     public $monday;
@@ -26,9 +28,15 @@ class SingleManningDTO
         $this->sunday = 0;
     }
 
-    public function addMinutes(int $dayOfTheWeek, int $minutes): self
+    /**
+     * @param Carbon $day
+     * @param int    $minutes
+     *
+     * @return SingleManningDTO
+     */
+    public function addMinutes(Carbon $day, int $minutes): self
     {
-        switch ($dayOfTheWeek) {
+        switch ($day->dayOfWeek) {
             case 0:
                 $this->sunday += $minutes;
                 break;

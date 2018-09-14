@@ -19,14 +19,11 @@ class SingleManningCalculator
             if ($shifts->count() === 1) {
                 $shift = $shifts->pop();
 
-                // Find which day the shift is in
-                $dayOfTheWeek = $shift->start_time->dayOfWeek;
-
                 // Calculate how many minutes
                 $minutes = $shift->start_time->diffInMinutes($shift->end_time);
 
                 // Set the DTO
-                $singleManningDTO->addMinutes($dayOfTheWeek, $minutes);
+                $singleManningDTO->addMinutes($shift->start_time, $minutes);
             }
         }
 
