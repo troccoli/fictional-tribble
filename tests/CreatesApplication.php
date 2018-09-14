@@ -3,6 +3,7 @@
 namespace Tests;
 
 use Illuminate\Contracts\Console\Kernel;
+use Illuminate\Support\Carbon;
 
 trait CreatesApplication
 {
@@ -16,6 +17,8 @@ trait CreatesApplication
         $app = require __DIR__.'/../bootstrap/app.php';
 
         $app->make(Kernel::class)->bootstrap();
+
+        Carbon::setLocale('en_GB');
 
         return $app;
     }
