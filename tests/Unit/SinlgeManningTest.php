@@ -294,4 +294,94 @@ class SinlgeManningTest extends TestCase
         $this->assertEquals(0, $singleManningDTO->saturday);
         $this->assertEquals(0, $singleManningDTO->sunday);
     }
+
+    public function testScenarioFive()
+    {
+        /*
+         * Scenario 4:
+         *
+         * Given Black Widow, Wolverine and Gamora working at FunHouse on Saturday
+         *
+         * When Black Widow works the whole day with a lunch break
+         * And Wolverine works from mid-morning to mid-afternoon with no break
+         * And Gamora works the afternoon only
+         *
+         * Then Black Widow receives single manning supplement until Wolverine starts
+         * And Wolverine receives single manning supplement during Black Widow break
+         * And Gamora does not receive any single manning supplement
+         */
+
+        // Create a shop and a rota
+        $shop = factory(Shop::class)->create([
+            'name' => 'Funhouse',
+        ]);
+        $rota = factory(Rota::class)->create([
+            'shop_id'            => $shop->id,
+            // We get today's date and get back a month so we are sure to have a whole week in the rota.
+            // The we get the start of the week, which is a Monday because we have set the en_GB locale.
+            // Then we format it as expected
+            'week_commence_date' => Carbon::now()->subMonth()->startOfWeek()->format('Y-m-d'),
+        ]);
+
+        /** @var Staff $blackWidow */
+        $blackWidow = factory(Staff::class)->create([
+            'first_name' => 'Black',
+            'surname'    => 'Widow',
+            'shop_id'    => $shop->id,
+        ]);
+        /** @var Staff $wolverine */
+        $wolverine = factory(Staff::class)->create([
+            'first_name' => 'Wolverine',
+            'surname'    => '',
+            'shop_id'    => $shop->id,
+        ]);
+        /** @var Staff $gamora */
+        $gamora = factory(Staff::class)->create([
+            'first_name' => 'Gamora',
+            'surname'    => '',
+            'shop_id'    => $shop->id,
+        ]);
+
+        /** @var Carbon $saturday */
+        $saturday = $rota->week_commence_date;
+        $saturday->addDay(5);
+
+        $blackWidowShift = factory(Shift::class)->create([
+            'rota_id'    => $rota->id,
+            'staff_id'   => $wolverine->id,
+            'start_time' => $saturday->hour(9)->minute(0)->second(0)->toDateTimeString(),
+            'end_time'   => $saturday->hour(17)->minute(0)->second(0)->toDateTimeString(),
+        ]);
+        $wolverineShift = factory(Shift::class)->create([
+            'rota_id'    => $rota->id,
+            'staff_id'   => $wolverine->id,
+            'start_time' => $saturday->hour(10)->minute(30)->second(0)->toDateTimeString(),
+            'end_time'   => $saturday->hour(15)->minute(0)->second(0)->toDateTimeString(),
+        ]);
+        $gamoraShift = factory(Shift::class)->create([
+            'rota_id'    => $rota->id,
+            'staff_id'   => $gamora->id,
+            'start_time' => $saturday->hour(14)->minute(0)->second(0)->toDateTimeString(),
+            'end_time'   => $saturday->hour(17)->minute(0)->second(0)->toDateTimeString(),
+        ]);
+
+        $blackWidowLunchbreak = factory(ShiftBreak::class)->create([
+            'shift_id'   => $blackWidowShift->id,
+            'start_time' => $saturday->hour(12)->minute(0)->second(0)->toDateTimeString(),
+            'end_time'   => $saturday->hour(12)->minute(30)->second(0)->toDateTimeString(),
+        ]);
+
+        // Calculate the single mannings
+        $singleManningDTO = $this->singleManningCalculator->calculate($rota);
+
+        // Check the single manning is what we are expecting
+        $this->assertEquals(0, $singleManningDTO->monday);
+        $this->assertEquals(0, $singleManningDTO->tuesday);
+        $this->assertEquals(0, $singleManningDTO->wednesday);
+        $this->assertEquals(0, $singleManningDTO->thursday);
+        $this->assertEquals(0, $singleManningDTO->friday);
+        $this->assertEquals(120, $singleManningDTO->saturday); // 90 minutes before Wolverine starts and 30 minutes Black Widow break
+        $this->assertEquals(0, $singleManningDTO->sunday);
+    }
+
 }
