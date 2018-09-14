@@ -5,11 +5,17 @@ namespace App\Services;
 use App\DTOs\SingleManningDTO;
 use App\Rota;
 use App\Shift;
-use Illuminate\Support\Carbon;
 use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Carbon;
 
 class SingleManningCalculator
 {
+
+    /**
+     * @param Rota $rota
+     *
+     * @return SingleManningDTO
+     */
     public static function calculate(Rota $rota): SingleManningDTO
     {
         $singleManningDTO = new SingleManningDTO();
@@ -24,39 +30,52 @@ class SingleManningCalculator
             });
 
             foreach ($shiftsByDay as $date => $shifts) {
-                $shifts = $shifts->sortBy(function($item, $key) {
-                    return $item->start_time;
-                });
                 $date = new Carbon($date);
 
-                if ($shifts->count() === 1) {
-                    /** @var Shift $shift */
-                    $shift = $shifts->shift();
+                $times = [];
 
-                    // Calculate how many minutes
-                    $minutes = $shift->shiftLengthInMinutes();
+                $workingShifts = [];
+                foreach ($shifts as $shift) {
+                    $start = $shift->start_time;
 
-                    // Set the DTO
-                    $singleManningDTO->addMinutes($date, $minutes);
-                } elseif ($shifts->count() === 2) {
-                    /** @var Shift $firstShift */
-                    $firstShift = $shifts->shift();
-                    /** @var Shift $secondShift */
-                    $secondShift = $shifts->shift();
+                    foreach ($shift->breaks as $break) {
+                        $workingShift = clone $shift;
+                        $workingShift->start_time = $start;
+                        $workingShift->end_time = $break->start_time;
 
-                    if ($firstShift->end_time->lte($secondShift->start_time)) {
-                        $firstShiftMinutes = $firstShift->shiftLengthInMinutes();
-                        $secondShiftMinutes = $secondShift->shiftLengthInMinutes();
+                        $workingShifts[] = $workingShift;
 
-                        $singleManningDTO->addMinutes($date, $firstShiftMinutes)
-                            ->addMinutes($date, $secondShiftMinutes);
-                    } else {
-                        $singleManningDTO->addSingleManningPeriod($date, $firstShift->start_time, $secondShift->start_time)
-                            ->addSingleManningPeriod($date, $firstShift->end_time, $secondShift->end_time);
+                        $start = $break->end_time;
                     }
-                }
-            }
 
+                    $workingShift = clone $shift;
+                    $workingShift->start_time = $start;
+
+                    $workingShifts[] = $workingShift;
+                }
+                foreach ($workingShifts as $shift) {
+                    $times[] = $shift->start_time;
+                    $times[] = $shift->end_time;
+                }
+
+                $times = collect($times)->sort()->unique();
+                $workingShifts = collect($workingShifts);
+
+                $fromTime = $times->shift();
+                do {
+                    $toTime = $times->shift();
+                    // do something
+                    $staffWorking = $workingShifts->filter(function ($shift, $key) use ($fromTime, $toTime) {
+                        return $shift->start_time->lte($fromTime) && $shift->end_time->gte($toTime);
+                    })->count();
+
+                    if ($staffWorking === 1) {
+                        $singleManningDTO->addSingleManningPeriod($date, $fromTime, $toTime);
+                    }
+
+                    $fromTime = $toTime;
+                } while ($times->isNotEmpty());
+            }
         }
 
         return $singleManningDTO;

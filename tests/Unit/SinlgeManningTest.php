@@ -13,7 +13,7 @@ use Tests\TestCase;
 
 class SinlgeManningTest extends TestCase
 {
-    public function testScenarionOne()
+    public function testScenarioOne()
     {
         /*
          * Scenario 1:
@@ -199,6 +199,86 @@ class SinlgeManningTest extends TestCase
         $this->assertEquals(0, $singleManningDTO->tuesday);
         $this->assertEquals(360, $singleManningDTO->wednesday); // 1 hour for Wolverine and 5 hours for Gamora
         $this->assertEquals(0, $singleManningDTO->thursday);
+        $this->assertEquals(0, $singleManningDTO->friday);
+        $this->assertEquals(0, $singleManningDTO->saturday);
+        $this->assertEquals(0, $singleManningDTO->sunday);
+    }
+
+    public function testScenarioFour()
+    {
+        /*
+         * Scenario 4:
+         *
+         * Given Wolverine and Gamora working at FunHouse on Thursday
+         *
+         * When Both of them work throughout the whole day
+         * And The both have a lunch break each
+         *
+         * Then Wolverine receives single manning supplement while Gamora is on break
+         * And Gamora receives single manning supplement during Wolverines break.
+         */
+
+        // Create a shop and a rota
+        $shop = factory(Shop::class)->create([
+            'name' => 'Funhouse',
+        ]);
+        $rota = factory(Rota::class)->create([
+            'shop_id'            => $shop->id,
+            // We get today's date and get back a month so we are sure to have a whole week in the rota.
+            // The we get the start of the week, which is a Monday because we have set the en_GB locale.
+            // Then we format it as expected
+            'week_commence_date' => Carbon::now()->subMonth()->startOfWeek()->format('Y-m-d'),
+        ]);
+
+        /** @var Staff $wolverine */
+        $wolverine = factory(Staff::class)->create([
+            'first_name' => 'Wolverine',
+            'surname'    => '',
+            'shop_id'    => $shop->id,
+        ]);
+        /** @var Staff $gamora */
+        $gamora = factory(Staff::class)->create([
+            'first_name' => 'Gamora',
+            'surname'    => '',
+            'shop_id'    => $shop->id,
+        ]);
+
+        /** @var Carbon $thursday */
+        $thursday = $rota->week_commence_date;
+        $thursday->addDay(3);
+
+        $wolverineShift = factory(Shift::class)->create([
+            'rota_id'    => $rota->id,
+            'staff_id'   => $wolverine->id,
+            'start_time' => $thursday->hour(9)->minute(0)->second(0)->toDateTimeString(),
+            'end_time'   => $thursday->hour(17)->minute(0)->second(0)->toDateTimeString(),
+        ]);
+        $gamoraShift = factory(Shift::class)->create([
+            'rota_id'    => $rota->id,
+            'staff_id'   => $gamora->id,
+            'start_time' => $thursday->hour(9)->minute(0)->second(0)->toDateTimeString(),
+            'end_time'   => $thursday->hour(17)->minute(0)->second(0)->toDateTimeString(),
+        ]);
+
+        $wolverineLunchBreak = factory(ShiftBreak::class)->create([
+            'shift_id'   => $wolverineShift->id,
+            'start_time' => $thursday->hour(12)->minute(0)->second(0)->toDateTimeString(),
+            'end_time'   => $thursday->hour(12)->minute(30)->second(0)->toDateTimeString(),
+        ]);
+        $gamoreLunchBreak = factory(ShiftBreak::class)->create([
+            'shift_id'   => $gamoraShift->id,
+            'start_time' => $thursday->hour(13)->minute(0)->second(0)->toDateTimeString(),
+            'end_time'   => $thursday->hour(13)->minute(30)->second(0)->toDateTimeString(),
+        ]);
+
+        // Calculate the single mannings
+        $singleManningDTO = SingleManningCalculator::calculate($rota);
+
+        // Check the single manning is what we are expecting
+        $this->assertEquals(0, $singleManningDTO->monday);
+        $this->assertEquals(0, $singleManningDTO->tuesday);
+        $this->assertEquals(0, $singleManningDTO->wednesday);
+        $this->assertEquals(60, $singleManningDTO->thursday); // 30 minutes Wolverine break and 30 minutes Gamora break
         $this->assertEquals(0, $singleManningDTO->friday);
         $this->assertEquals(0, $singleManningDTO->saturday);
         $this->assertEquals(0, $singleManningDTO->sunday);
