@@ -5,6 +5,7 @@ namespace Tests\Unit;
 use App\Rota;
 use App\Services\SingleManningCalculator;
 use App\Shift;
+use App\ShiftBreak;
 use App\Shop;
 use App\Staff;
 use Illuminate\Support\Carbon;
@@ -57,13 +58,13 @@ class SinlgeManningTest extends TestCase
         $singleManningDTO = SingleManningCalculator::calculate($rota);
 
         // Check the single manning is what we are expecting
-        $this->assertEquals($singleManningDTO->monday, 480); // 8 hours shift
-        $this->assertEquals($singleManningDTO->tuesday, 0);
-        $this->assertEquals($singleManningDTO->wednesday, 0);
-        $this->assertEquals($singleManningDTO->thursday, 0);
-        $this->assertEquals($singleManningDTO->friday, 0);
-        $this->assertEquals($singleManningDTO->saturday, 0);
-        $this->assertEquals($singleManningDTO->sunday, 0);
+        $this->assertEquals(480, $singleManningDTO->monday); // 8 hours shift
+        $this->assertEquals(0, $singleManningDTO->tuesday);
+        $this->assertEquals(0, $singleManningDTO->wednesday);
+        $this->assertEquals(0, $singleManningDTO->thursday);
+        $this->assertEquals(0, $singleManningDTO->friday);
+        $this->assertEquals(0, $singleManningDTO->saturday);
+        $this->assertEquals(0, $singleManningDTO->sunday);
     }
 
     public function testScenarioTwo()
@@ -125,13 +126,13 @@ class SinlgeManningTest extends TestCase
         $singleManningDTO = SingleManningCalculator::calculate($rota);
 
         // Check the single manning is what we are expecting
-        $this->assertEquals($singleManningDTO->monday, 0);
-        $this->assertEquals($singleManningDTO->tuesday, 480); // 4 hours for Black Widow and 4 hours for Thor
-        $this->assertEquals($singleManningDTO->wednesday, 0);
-        $this->assertEquals($singleManningDTO->thursday, 0);
-        $this->assertEquals($singleManningDTO->friday, 0);
-        $this->assertEquals($singleManningDTO->saturday, 0);
-        $this->assertEquals($singleManningDTO->sunday, 0);
+        $this->assertEquals(0, $singleManningDTO->monday);
+        $this->assertEquals(480, $singleManningDTO->tuesday); // 4 hours for Black Widow and 4 hours for Thor
+        $this->assertEquals(0, $singleManningDTO->wednesday);
+        $this->assertEquals(0, $singleManningDTO->thursday);
+        $this->assertEquals(0, $singleManningDTO->friday);
+        $this->assertEquals(0, $singleManningDTO->saturday);
+        $this->assertEquals(0, $singleManningDTO->sunday);
     }
 
     public function testScenarioThree()
@@ -194,12 +195,12 @@ class SinlgeManningTest extends TestCase
         $singleManningDTO = SingleManningCalculator::calculate($rota);
 
         // Check the single manning is what we are expecting
-        $this->assertEquals($singleManningDTO->monday, 0);
-        $this->assertEquals($singleManningDTO->tuesday, 0);
-        $this->assertEquals($singleManningDTO->wednesday, 360); // 1 hour for Wolverine and 5 hours for Gamora
-        $this->assertEquals($singleManningDTO->thursday, 0);
-        $this->assertEquals($singleManningDTO->friday, 0);
-        $this->assertEquals($singleManningDTO->saturday, 0);
-        $this->assertEquals($singleManningDTO->sunday, 0);
+        $this->assertEquals(0, $singleManningDTO->monday);
+        $this->assertEquals(0, $singleManningDTO->tuesday);
+        $this->assertEquals(360, $singleManningDTO->wednesday); // 1 hour for Wolverine and 5 hours for Gamora
+        $this->assertEquals(0, $singleManningDTO->thursday);
+        $this->assertEquals(0, $singleManningDTO->friday);
+        $this->assertEquals(0, $singleManningDTO->saturday);
+        $this->assertEquals(0, $singleManningDTO->sunday);
     }
 }
