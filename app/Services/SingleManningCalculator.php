@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\DTOs\SingleManningDTO;
 use App\Rota;
+use App\Shift;
 use Illuminate\Support\Carbon;
 use Illuminate\Database\Eloquent\Collection;
 
@@ -18,32 +19,37 @@ class SingleManningCalculator
 
         if ($shifts->isNotEmpty()) {
             $shiftsByDay = $shifts->groupBy(function ($item, $key) {
-                return $item->start_time->format('Y-m-d');
+                /** @var Shift $item */
+                return $item->shiftDate();
             });
 
             foreach ($shiftsByDay as $date => $shifts) {
                 $shifts = $shifts->sortBy(function($item, $key) {
                     return $item->start_time;
                 });
+                $date = new Carbon($date);
 
                 if ($shifts->count() === 1) {
-                    $shift = $shifts->pop();
+                    /** @var Shift $shift */
+                    $shift = $shifts->shift();
 
                     // Calculate how many minutes
-                    $minutes = $shift->start_time->diffInMinutes($shift->end_time);
+                    $minutes = $shift->shiftLengthInMinutes();
 
                     // Set the DTO
-                    $singleManningDTO->addMinutes(new Carbon($date), $minutes);
+                    $singleManningDTO->addMinutes($date, $minutes);
                 } elseif ($shifts->count() === 2) {
+                    /** @var Shift $firstShift */
                     $firstShift = $shifts->shift();
+                    /** @var Shift $secondShift */
                     $secondShift = $shifts->shift();
 
                     if ($firstShift->end_time <= $secondShift->start_time) {
-                        $firstShiftMinutes = $firstShift->start_time->diffInMinutes($firstShift->end_time);
-                        $secondShiftMinutes = $secondShift->start_time->diffInMinutes($secondShift->end_time);
+                        $firstShiftMinutes = $firstShift->shiftLengthInMinutes();
+                        $secondShiftMinutes = $secondShift->shiftLengthInMinutes();
 
-                        $singleManningDTO->addMinutes(new Carbon($date), $firstShiftMinutes)
-                            ->addMinutes(new Carbon($date), $secondShiftMinutes);
+                        $singleManningDTO->addMinutes($date, $firstShiftMinutes)
+                            ->addMinutes($date, $secondShiftMinutes);
                     }
                 }
             }

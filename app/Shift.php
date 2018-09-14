@@ -32,4 +32,20 @@ class Shift extends Model
     {
         return $this->hasMany(ShiftBreak::class);
     }
+
+    /**
+     * @return int
+     */
+    public function shiftLengthInMinutes(): int
+    {
+        return $this->start_time->diffInMinutes($this->end_time);
+    }
+
+    /**
+     * @return string
+     */
+    public function shiftDate(): string
+    {
+        return $this->start_time->format('Y-m-d');
+    }
 }
