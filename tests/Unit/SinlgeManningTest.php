@@ -3,6 +3,7 @@
 namespace Tests\Unit;
 
 use App\Rota;
+use App\Services\SingleManningCalculator;
 use App\Shift;
 use App\Shop;
 use App\Staff;
