@@ -3,6 +3,7 @@
 namespace App;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Carbon;
 
 class Shift extends Model
 {
@@ -48,4 +49,21 @@ class Shift extends Model
     {
         return $this->start_time->format('Y-m-d');
     }
+
+    /**
+     * @return Carbon
+     */
+    public function getStarTime(): Carbon
+    {
+        return $this->start_time;
+    }
+
+    /**
+     * @return Carbon
+     */
+    public function getEndTime(): Carbon
+    {
+        return $this->end_time;
+    }
+
 }
