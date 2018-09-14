@@ -380,8 +380,115 @@ class SinlgeManningTest extends TestCase
         $this->assertEquals(0, $singleManningDTO->wednesday);
         $this->assertEquals(0, $singleManningDTO->thursday);
         $this->assertEquals(0, $singleManningDTO->friday);
-        $this->assertEquals(120, $singleManningDTO->saturday); // 90 minutes before Wolverine starts and 30 minutes Black Widow break
+        $this->assertEquals(120, $singleManningDTO->saturday); // 90 minutes for Black Widow and 30 for Wolverine
         $this->assertEquals(0, $singleManningDTO->sunday);
+    }
+
+    public function testScenarioSix()
+    {
+        /*
+         * Scenario 4:
+         *
+         * Given Black Widow, Thor, Wolverine and Gamora working at FunHouse on Sunday
+         *
+         * When Black Widow works the early morning shift
+         * And Thor works the whole day with a lunch break
+         * And Wolverine works the morning shift
+         * And Gamora works the late evening shift
+         *
+         * Then Black Widow receives single manning supplement until Thor starts
+         * And Thor receives single manning supplement after Gamora leaves and before Wolverine starts
+         * And Wolverine receives single manning supplement after Thor leaves
+         * And Gamora receives single manning supplement when Thos in on break.
+         */
+
+        // Create a shop and a rota
+        $shop = factory(Shop::class)->create([
+            'name' => 'Funhouse',
+        ]);
+        $rota = factory(Rota::class)->create([
+            'shop_id'            => $shop->id,
+            // We get today's date and get back a month so we are sure to have a whole week in the rota.
+            // The we get the start of the week, which is a Monday because we have set the en_GB locale.
+            // Then we format it as expected
+            'week_commence_date' => Carbon::now()->subMonth()->startOfWeek()->format('Y-m-d'),
+        ]);
+
+        /** @var Staff $blackWidow */
+        $blackWidow = factory(Staff::class)->create([
+            'first_name' => 'Black',
+            'surname'    => 'Widow',
+            'shop_id'    => $shop->id,
+        ]);
+        /** @var Staff $thor */
+        $thor = factory(Staff::class)->create([
+            'first_name' => 'Thor',
+            'surname'    => '',
+            'shop_id'    => $shop->id,
+        ]);
+        /** @var Staff $wolverine */
+        $wolverine = factory(Staff::class)->create([
+            'first_name' => 'Wolverine',
+            'surname'    => '',
+            'shop_id'    => $shop->id,
+        ]);
+        /** @var Staff $gamora */
+        $gamora = factory(Staff::class)->create([
+            'first_name' => 'Gamora',
+            'surname'    => '',
+            'shop_id'    => $shop->id,
+        ]);
+
+        /** @var Carbon $sunday */
+        $sunday = $rota->week_commence_date;
+        $sunday->addDay(6);
+
+        $blackWidowShift = factory(Shift::class)->create([
+            'rota_id'    => $rota->id,
+            'staff_id'   => $blackWidow->id,
+            'start_time' => $sunday->hour(7)->minute(0)->second(0)->toDateTimeString(),
+            'end_time'   => $sunday->hour(11)->minute(0)->second(0)->toDateTimeString(),
+        ]);
+        $thorShift = factory(Shift::class)->create([
+            'rota_id'    => $rota->id,
+            'staff_id'   => $thor->id,
+            'start_time' => $sunday->hour(9)->minute(0)->second(0)->toDateTimeString(),
+            'end_time'   => $sunday->hour(17)->minute(0)->second(0)->toDateTimeString(),
+        ]);
+        $wolverineShift = factory(Shift::class)->create([
+            'rota_id'    => $rota->id,
+            'staff_id'   => $wolverine->id,
+            'start_time' => $sunday->hour(15)->minute(0)->second(0)->toDateTimeString(),
+            'end_time'   => $sunday->hour(20)->minute(0)->second(0)->toDateTimeString(),
+        ]);
+        $gamoraShift = factory(Shift::class)->create([
+            'rota_id'    => $rota->id,
+            'staff_id'   => $gamora->id,
+            'start_time' => $sunday->hour(9)->minute(0)->second(0)->toDateTimeString(),
+            'end_time'   => $sunday->hour(14)->minute(0)->second(0)->toDateTimeString(),
+        ]);
+
+        $thorLunchBreak = factory(ShiftBreak::class)->create([
+            'shift_id'   => $thorShift->id,
+            'start_time' => $sunday->hour(13)->minute(0)->second(0)->toDateTimeString(),
+            'end_time'   => $sunday->hour(14)->minute(0)->second(0)->toDateTimeString(),
+        ]);
+
+        // Calculate the single mannings
+        $singleManningDTO = $this->singleManningCalculator->calculate($rota);
+
+        // Check the single manning is what we are expecting
+        $this->assertEquals(0, $singleManningDTO->monday);
+        $this->assertEquals(0, $singleManningDTO->tuesday);
+        $this->assertEquals(0, $singleManningDTO->wednesday);
+        $this->assertEquals(0, $singleManningDTO->thursday);
+        $this->assertEquals(0, $singleManningDTO->friday);
+        $this->assertEquals(0, $singleManningDTO->saturday);
+        // 2 hours and a hals for Black Widow
+        // 1 hour for Thor
+        // 3 hours for Wolverine
+        // 1 hour for Gamora
+        $this->assertEquals(420, $singleManningDTO->sunday);
     }
 
 }
