@@ -50,6 +50,16 @@ class SingleManningCalculator
 
                         $singleManningDTO->addMinutes($date, $firstShiftMinutes)
                             ->addMinutes($date, $secondShiftMinutes);
+                    } else {
+                        $firstShiftEnd = $firstShift->end_time;
+                        $firstShift->end_time = $secondShift->start_time;
+                        $secondShift->start_time = $firstShiftEnd;
+
+                        $firstShiftMinutes = $firstShift->shiftLengthInMinutes();
+                        $secondShiftMinutes = $secondShift->shiftLengthInMinutes();
+
+                        $singleManningDTO->addMinutes($date, $firstShiftMinutes)
+                            ->addMinutes($date, $secondShiftMinutes);
                     }
                 }
             }
