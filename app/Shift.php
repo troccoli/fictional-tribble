@@ -53,9 +53,21 @@ class Shift extends Model
     /**
      * @return Carbon
      */
-    public function getStarTime(): Carbon
+    public function getStartTime(): Carbon
     {
         return $this->start_time;
+    }
+
+    /**
+     * @param Carbon $time
+     *
+     * @return Shift
+     */
+    public function setStartTime(Carbon $time): self
+    {
+        $this->start_time = $time;
+
+        return $this;
     }
 
     /**
@@ -66,4 +78,15 @@ class Shift extends Model
         return $this->end_time;
     }
 
+    /**
+     * @param Carbon $time
+     *
+     * @return Shift
+     */
+    public function setEndTime(Carbon $time): self
+    {
+        $this->end_time = $time;
+
+        return $this;
+    }
 }

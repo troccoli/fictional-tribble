@@ -3,6 +3,7 @@
 namespace App;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Carbon;
 
 class ShiftBreak extends Model
 {
@@ -18,4 +19,21 @@ class ShiftBreak extends Model
     {
         return $this->belongsTo(Shift::class);
     }
+
+    /**
+     * @return Carbon
+     */
+    public function getStartTime(): Carbon
+    {
+        return $this->start_time;
+    }
+
+    /**
+     * @return Carbon
+     */
+    public function getEndTime(): Carbon
+    {
+        return $this->end_time;
+    }
+
 }

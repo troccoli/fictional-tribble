@@ -11,6 +11,15 @@ class WorkingStaffCounter
     /** @var Collection */
     protected $shifts;
 
+    /**
+     * WorkingStaffCounter constructor.
+     */
+    public function __construct()
+    {
+        $this->shifts = collect([]);
+    }
+
+
     public function setShifts(Collection $shifts): self
     {
         $this->shifts = $shifts;
@@ -22,7 +31,8 @@ class WorkingStaffCounter
     {
         return $this->shifts->filter(function ($shift, $key) use ($from, $to) {
             /** @var Shift $shift */
-            return $shift->getStarTime()->lte($from) && $shift->getEndTime()->gte($to);
+            return $shift->getStartTime()->lte($from) &&
+                   $shift->getEndTime()->gte($to);
         })->count();
     }
 }

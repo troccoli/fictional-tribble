@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Rota;
 use App\Shift;
+use App\ShiftBreak;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 
@@ -41,20 +42,23 @@ class ShiftsManipulator
     {
         $workingShifts = [];
         foreach ($shifts as $shift) {
-            $start = $shift->start_time;
+            /** @var Shift $shift */
+            $start = $shift->getStartTime();
 
+            /** @var ShiftBreak $break */
             foreach ($shift->breaks as $break) {
+                /** @var Shift $workingShift */
                 $workingShift = clone $shift;
-                $workingShift->start_time = $start;
-                $workingShift->end_time = $break->start_time;
+                $workingShift->setStartTime($start);
+                $workingShift->setEndTime($break->getStartTime());
 
                 $workingShifts[] = $workingShift;
 
-                $start = $break->end_time;
+                $start = $break->getEndTime();
             }
 
             $workingShift = clone $shift;
-            $workingShift->start_time = $start;
+            $workingShift->setStartTime($start);
 
             $workingShifts[] = $workingShift;
         }
@@ -71,9 +75,10 @@ class ShiftsManipulator
     {
         $times = [];
 
+        /** @var Shift $shift */
         foreach ($shifts as $shift) {
-            $times[] = $shift->start_time;
-            $times[] = $shift->end_time;
+            $times[] = $shift->getStartTime();
+            $times[] = $shift->getEndTime();
         }
 
         return collect($times)->sort()->unique();
