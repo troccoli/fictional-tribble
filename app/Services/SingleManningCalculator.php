@@ -44,7 +44,7 @@ class SingleManningCalculator
                     /** @var Shift $secondShift */
                     $secondShift = $shifts->shift();
 
-                    if ($firstShift->end_time <= $secondShift->start_time) {
+                    if ($firstShift->end_time->lte($secondShift->start_time)) {
                         $firstShiftMinutes = $firstShift->shiftLengthInMinutes();
                         $secondShiftMinutes = $secondShift->shiftLengthInMinutes();
 
